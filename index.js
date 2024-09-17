@@ -23,13 +23,28 @@ const upload = multer({ storage: storage })
 const bodyParser = require('body-parser')
 const app = express()
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(cors());
+app.use(cors({
+    origin: "https://manipalmarket.vercel.app/",
+    methods: ["POST", "GET"],
+    credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const port = 4000
 const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGO);
+// mongoose.connect(process.env.MONGO);
+
+mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => {
+        console.error('Failed to connect to MongoDB:', err);
+        process.exit(1); // Exit the server if the DB connection fails
+    });
+
+
+
+
 // mongodb://localhost:27017/
 app.get('/', (req, res) => {
     res.send('hello...')
