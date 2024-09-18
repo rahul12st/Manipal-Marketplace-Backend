@@ -25,7 +25,7 @@ schema.index({ pLoc: '2dsphere' });
 const Product = mongoose.models.Product || mongoose.model('Product', schema); // Ensure singular 'Product'
 
 // Search product functionality
-module.exports.search = (req, res) => {
+const search = (req, res) => {
     console.log(req.query);
 
     let latitude = req.query.loc.split(',')[0];
@@ -57,7 +57,7 @@ module.exports.search = (req, res) => {
 };
 
 // Add a new product functionality
-module.exports.addProduct = (req, res) => {
+const addProduct = (req, res) => {
     console.log(req.files);
     console.log(req.body);
 
@@ -86,7 +86,7 @@ module.exports.addProduct = (req, res) => {
 };
 
 // Get all products or products by category functionality
-module.exports.getProducts = (req, res) => {
+const getProducts = (req, res) => {
     const catName = req.query.catName;
     let filter = {};
 
@@ -104,7 +104,7 @@ module.exports.getProducts = (req, res) => {
 };
 
 // Get a product by ID functionality
-module.exports.getProductsById = (req, res) => {
+const getProductsById = (req, res) => {
     console.log(req.params);
 
     Product.findOne({ _id: req.params.pId })
@@ -117,7 +117,7 @@ module.exports.getProductsById = (req, res) => {
 };
 
 // Get products added by a specific user functionality
-module.exports.myProducts = (req, res) => {
+const myProducts = (req, res) => {
     const userId = req.body.userId;
 
     Product.find({ addedBy: userId })
