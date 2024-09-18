@@ -7,11 +7,7 @@ const productController = require('./controllers/productController');
 const userController = require('./controllers/userController');
 const dotenv=require('dotenv');
 
-app.use(cors({
-    origin: "https://manipalmarket.vercel.app/",
-    methods: ["POST", "GET"],
-    credentials: true
-}));
+
 dotenv.config();
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -26,6 +22,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 const bodyParser = require('body-parser')
 const app = express()
+
+
+app.use(cors({
+    origin: "https://manipalmarket.vercel.app/",
+    methods: ["POST", "GET"],
+    credentials: true
+}));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(bodyParser.json());
