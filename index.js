@@ -31,6 +31,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],  // Allowed HTTP methods
     credentials: true,  // Allow sending cookies or credentials if needed
 }));
+app.options('*', cors()); 
 // Serve static files from 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
