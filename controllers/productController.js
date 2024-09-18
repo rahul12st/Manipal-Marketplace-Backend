@@ -22,7 +22,7 @@ let schema = new mongoose.Schema({
 
 schema.index({ pLoc: '2dsphere' });
 
-const Product = mongoose.models.Product || mongoose.model('Product', Schema); // Ensure singular 'Product'
+const Product = mongoose.models.Product || mongoose.model('Product', schema); // Ensure singular 'Product'
 
 // Search product functionality
 const search = (req, res) => {
