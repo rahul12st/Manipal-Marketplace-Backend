@@ -49,6 +49,7 @@ mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology:
 app.get('/', (req, res) => {
     res.send('hello...')
 })
+console.log(productController);
 
 app.get('/search', productController.search)
 app.post('/like-product', userController.likeProducts)
