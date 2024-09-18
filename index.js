@@ -60,7 +60,8 @@ console.log(productController); // This is correct, logs the productController o
 app.get('/search', productController.search);
 
 // Add product route (multer for handling image uploads)
-app.post('/add-product', upload.fields([{ name: 'pimage' }, { name: 'pimage2' }]), productController.addProduct);
+app.post('/add-product', upload.single('pimage'), productController.addProduct);
+
 
 // Get products route
 app.get('/get-products', productController.getProducts);
