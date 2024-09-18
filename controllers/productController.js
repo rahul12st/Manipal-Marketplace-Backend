@@ -24,8 +24,8 @@ let schema = new mongoose.Schema({
 
 schema.index({ pLoc: '2dsphere' });
 
-const Products = mongoose.model('Products', schema);
-
+// const Products = mongoose.model('Products', schema);
+const Product = mongoose.models.Product || mongoose.model('Product',Schema);
 
 module.exports.search = (req, res) => {
 
