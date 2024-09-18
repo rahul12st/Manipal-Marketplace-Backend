@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
-const productController = require('./controllers/productController');
-const userController = require('./controllers/userController');
+const productController = require('../controllers/productController');
+const userController = require('../controllers/userController');
 const dotenv = require('dotenv');
 
 // Load environment variables
