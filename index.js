@@ -6,7 +6,7 @@ const productController = require('./controllers/productController');
 const userController = require('./controllers/userController');
 const dotenv = require('dotenv');
 
-// Load environment variables
+// Load environment variables (if necessary)
 dotenv.config();
 
 // Multer configuration for file uploads
@@ -24,9 +24,9 @@ const upload = multer({ storage: storage });
 const bodyParser = require('body-parser');
 const app = express();
 
-// Set up CORS
+// Set up CORS to allow requests from the deployed frontend
 app.use(cors({
-    origin: "https://manipalmarket.vercel.app/",
+    origin: "https://manipalmarket.vercel.app",  // Allow requests from your deployed frontend
     methods: ["POST", "GET"],
     credentials: true
 }));
@@ -39,7 +39,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // MongoDB connection
-const port = 4000;
+const port = process.env.PORT || 4000;  // Use environment port or default to 4000
 const mongoose = require('mongoose');
 
 mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -54,7 +54,7 @@ app.get('/', (req, res) => {
     res.send('hello...');
 });
 
-console.log(productController); // This is correct, logs the productController object
+console.log(productController);  // Log productController object
 
 // Search route
 app.get('/search', productController.search);
@@ -63,8 +63,6 @@ app.get('/search', productController.search);
 console.log(upload.fields([{ name: 'pimage' }, { name: 'pimage2' }]));  // Log multer middleware
 
 app.post('/add-product', upload.fields([{ name: 'pimage' }, { name: 'pimage2' }]), productController.addProduct);
-
-
 
 // Get products route
 app.get('/get-products', productController.getProducts);
@@ -82,5 +80,5 @@ app.post('/login', userController.login);
 
 // Start server
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`Backend server listening on port ${port}`);
 });
