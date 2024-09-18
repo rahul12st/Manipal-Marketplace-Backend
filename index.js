@@ -25,13 +25,20 @@ const bodyParser = require('body-parser');
 const app = express();
 
 // Set up CORS to allow requests from the deployed frontend
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "https://manipalmarket.vercel.app"); // Allow from your frontend domain
+    res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Credentials", "true"); // Allow credentials
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200); // Always respond with 200 OK for preflight checks
+    }
+    next();
+});
 
-app.use(cors({
-    origin: "https://manipalmarket.vercel.app",  // Allow requests from your deployed frontend
-    methods: ["GET", "POST", "PUT", "DELETE"],  // Allowed HTTP methods
-    credentials: true,  // Allow sending cookies or credentials if needed
-}));
-app.options('*', cors()); 
 // Serve static files from 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -55,14 +62,10 @@ app.get('/', (req, res) => {
     res.send('hello...');
 });
 
-console.log(productController);  // Log productController object
-
 // Search route
 app.get('/search', productController.search);
 
 // Add product route (multer for handling image uploads)
-console.log(upload.fields([{ name: 'pimage' }, { name: 'pimage2' }]));  // Log multer middleware
-
 app.post('/add-product', upload.fields([{ name: 'pimage' }, { name: 'pimage2' }]), productController.addProduct);
 
 // Get products route
