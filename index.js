@@ -25,7 +25,7 @@ const bodyParser = require('body-parser');
 const app = express();
 
 // Set up CORS to allow requests from the deployed frontend
-app.use(cors({
+
 app.use(cors({
     origin: "https://manipalmarket.vercel.app",  // Allow requests from your deployed frontend
     methods: ["GET", "POST", "PUT", "DELETE"],  // Allowed HTTP methods
