@@ -55,7 +55,7 @@ app.get('/', (req, res) => {
 console.log(productController);
 
 app.get('/search', productController.search)
-app.post('/like-product', userController.likeProducts)
+// app.post('/like-product', userController.likeProducts)
 console.log(upload.fields([{ name: 'pimage' }, { name: 'pimage2' }]));
 app.post('/add-product', upload.fields([{ name: 'pimage' }, { name: 'pimage2' }]), productController.addProduct);
 
