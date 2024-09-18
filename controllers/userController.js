@@ -1,89 +1,78 @@
-
 const mongoose = require('mongoose');
+var jwt = require('jsonwebtoken');
+const bcryptjs=require('bcryptjs');
 
+const Users = mongoose.model('Users', {
+    username: String,
+    mobile: String,
+    email: String,
+    password: String,
+    likedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Products' }]
+});
 
-let schema = new mongoose.Schema({
-    pname: String,
-    pdesc: String,
-    price: String,
-    category: String,
-    pimage: String,
-    pimage2: String,
-    addedBy: mongoose.Schema.Types.ObjectId,
-    pLoc: {
-        type: {
-            type: String,
-            enum: ['Point'],
-            default: 'Point'
-        },
-        coordinates: {
-            type: [Number]
-        }
-    }
-})
+module.exports.likeProducts = (req, res) => {
+    let productId = req.body.productId;
+    let userId = req.body.userId;
 
-schema.index({ pLoc: '2dsphere' });
-
-const Products = mongoose.model('Products', schema);
-
-
-module.exports.search = (req, res) => {
-
-    console.log(req.query)
-
-    let latitude = req.query.loc.split(',')[0]
-    let longitude = req.query.loc.split(',')[1]
-
-    let search = req.query.search;
-    Products.find({
-        $or: [
-            { pname: { $regex: search } },
-            { pdesc: { $regex: search } },
-            { price: { $regex: search } },
-        ],
-        pLoc: {
-            $near: {
-                $geometry: {
-                    type: 'Point',
-                    coordinates: [parseFloat(latitude), parseFloat(longitude)]
-                },
-                $maxDistance: 500 * 1000,
-            }
-
-        }
-    })
-        .then((results) => {
-            res.send({ message: 'success', products: results })
+    Users.updateOne({ _id: userId }, { $addToSet: { likedProducts: productId } })
+        .then(() => {
+            res.send({ message: 'liked success.' })
         })
-        .catch((err) => {
+        .catch(() => {
             res.send({ message: 'server err' })
         })
+
 }
 
-module.exports.addProduct = (req, res) => {
-
-    console.log(req.files);
-    console.log(req.body);
-
-
-    const plat = req.body.plat;
-    const plong = req.body.plong;
-    const pname = req.body.pname;
-    const pdesc = req.body.pdesc;
-    const price = req.body.price;
-    const category = req.body.category;
-    const pimage = req.files.pimage[0].path;
-    const pimage2 = req.files.pimage2[0].path;
-    const addedBy = req.body.userId;
-
-    const product = new Products({
-        pname, pdesc, price, category, pimage, pimage2, addedBy, pLoc: {
-            type: 'Point', coordinates: [plat, plong]
-        }
-    });
-    product.save()
+module.exports.signup = (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+    const email = req.body.email;
+    const mobile = req.body.mobile;
+    const hashedPassword=bcryptjs.hashSync(password,10);
+    const user = new Users({ username: username, password: hashedPassword, email, mobile });
+    user.save()
         .then(() => {
             res.send({ message: 'saved success.' })
+        })
+        .catch(() => {
+            res.send({ message: 'server err' })
+        })
+
+}
+
+module.exports.myProfileById = (req, res) => {
+    let uid = req.params.userId
+
+    Users.findOne({ _id: uid })
+        .then((result) => {
+            res.send({
+                message: 'success.', user: {
+                    email: result.email,
+                    mobile: result.mobile,
+                    username: result.username
+                }
+            })
+        })
+        .catch(() => {
+            res.send({ message: 'server err' })
+        })
+
+    return;
+
+}
+
+module.exports.getUserById = (req, res) => {
+    const _userId = req.params.uId;
+    Users.findOne({ _id: _userId })
+        .then((result) => {
+            res.send({
+                message: 'success.', user: {
+                    email: result.email,
+                    mobile: result.mobile,
+                    username: result.username
+                }
+            })
         })
         .catch(() => {
             res.send({ message: 'server err' })
@@ -91,50 +80,44 @@ module.exports.addProduct = (req, res) => {
 }
 
 
-module.exports.getProducts = (req, res) => {
+module.exports.login = (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
 
-    const catName = req.query.catName;
-    let _f = {}
 
-    if (catName) {
-        _f = { category: catName }
-    }
-
-    Products.find(_f)
+    Users.findOne({ username: username })
         .then((result) => {
-            res.send({ message: 'success', products: result })
+            if (!result) {
+                res.send({ message: 'user not found.' })
+            } else {
+                const validPassword=bcryptjs.compareSync(password,result.password);
+                if (validPassword) {
+                    const token = jwt.sign({
+                        data: result
+                    }, 'MYKEY', { expiresIn: '1h' });
+                    res.send({ message: 'find success.', token: token, userId: result._id })
+                }
+                if (!validPassword) {
+                    res.send({ message: 'password wrong.' })
+                }
 
+            }
+
+        })
+        .catch(() => {
+            res.send({ message: 'server err' })
+        })
+
+}
+
+module.exports.likedProducts = (req, res) => {
+
+    Users.findOne({ _id: req.body.userId }).populate('likedProducts')
+        .then((result) => {
+            res.send({ message: 'success', products: result.likedProducts })
         })
         .catch((err) => {
             res.send({ message: 'server err' })
         })
 
 }
-
-module.exports.getProductsById = (req, res) => {
-    console.log(req.params);
-
-    Products.findOne({ _id: req.params.pId })
-        .then((result) => {
-            res.send({ message: 'success', product: result })
-        })
-        .catch((err) => {
-            res.send({ message: 'server err' })
-        })
-
-}
-
-module.exports.myProducts = (req, res) => {
-
-    const userId = req.body.userId;
-
-    Products.find({ addedBy: userId })
-        .then((result) => {
-            res.send({ message: 'success', products: result })
-        })
-        .catch((err) => {
-            res.send({ message: 'server err' })
-        })
-
-}
-
