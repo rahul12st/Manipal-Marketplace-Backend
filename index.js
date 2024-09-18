@@ -26,11 +26,11 @@ const app = express();
 
 // Set up CORS to allow requests from the deployed frontend
 app.use(cors({
+app.use(cors({
     origin: "https://manipalmarket.vercel.app",  // Allow requests from your deployed frontend
-    methods: ["POST", "GET"],
-    credentials: true
+    methods: ["GET", "POST", "PUT", "DELETE"],  // Allowed HTTP methods
+    credentials: true,  // Allow sending cookies or credentials if needed
 }));
-
 // Serve static files from 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
