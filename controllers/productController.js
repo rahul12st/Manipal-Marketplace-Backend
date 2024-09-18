@@ -128,3 +128,11 @@ module.exports.myProducts = (req, res) => {
         res.send({ message: 'server error', error: err });
     });
 };
+// Correct export syntax
+module.exports = {
+    addProduct,
+    search,
+    getProducts,
+    getProductsById,
+    myProducts,
+};
