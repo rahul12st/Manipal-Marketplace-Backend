@@ -1,6 +1,4 @@
-
 const mongoose = require('mongoose');
-
 
 let schema = new mongoose.Schema({
     pname: String,
@@ -20,26 +18,25 @@ let schema = new mongoose.Schema({
             type: [Number]
         }
     }
-})
+});
 
 schema.index({ pLoc: '2dsphere' });
 
-// const Products = mongoose.model('Products', schema);
-const Product = mongoose.models.Product || mongoose.model('Product',schema);
+const Product = mongoose.models.Product || mongoose.model('Product', schema); // Ensure singular 'Product'
 
+// Search product functionality
 module.exports.search = (req, res) => {
+    console.log(req.query);
 
-    console.log(req.query)
-
-    let latitude = req.query.loc.split(',')[0]
-    let longitude = req.query.loc.split(',')[1]
+    let latitude = req.query.loc.split(',')[0];
+    let longitude = req.query.loc.split(',')[1];
 
     let search = req.query.search;
-    Products.find({
+    Product.find({
         $or: [
-            { pname: { $regex: search } },
-            { pdesc: { $regex: search } },
-            { price: { $regex: search } },
+            { pname: { $regex: search, $options: 'i' } }, // Add 'i' for case-insensitive
+            { pdesc: { $regex: search, $options: 'i' } },
+            { price: { $regex: search, $options: 'i' } },
         ],
         pLoc: {
             $near: {
@@ -47,24 +44,22 @@ module.exports.search = (req, res) => {
                     type: 'Point',
                     coordinates: [parseFloat(latitude), parseFloat(longitude)]
                 },
-                $maxDistance: 500 * 1000,
+                $maxDistance: 500 * 1000, // 500km
             }
-
         }
     })
-        .then((results) => {
-            res.send({ message: 'success', products: results })
-        })
-        .catch((err) => {
-            res.send({ message: 'server err' })
-        })
-}
+    .then((results) => {
+        res.send({ message: 'success', products: results });
+    })
+    .catch((err) => {
+        res.send({ message: 'server error', error: err });
+    });
+};
 
+// Add a new product functionality
 module.exports.addProduct = (req, res) => {
-
     console.log(req.files);
     console.log(req.body);
-
 
     const plat = req.body.plat;
     const plong = req.body.plong;
@@ -76,65 +71,60 @@ module.exports.addProduct = (req, res) => {
     const pimage2 = req.files.pimage2[0].path;
     const addedBy = req.body.userId;
 
-    const product = new Products({
-        pname, pdesc, price, category, pimage, pimage2, addedBy, pLoc: {
-            type: 'Point', coordinates: [plat, plong]
-        }
+    const product = new Product({
+        pname, pdesc, price, category, pimage, pimage2, addedBy, 
+        pLoc: { type: 'Point', coordinates: [plat, plong] }
     });
+
     product.save()
-        .then(() => {
-            res.send({ message: 'saved success.' })
-        })
-        .catch(() => {
-            res.send({ message: 'server err' })
-        })
-}
+    .then(() => {
+        res.send({ message: 'Product saved successfully.' });
+    })
+    .catch((err) => {
+        res.send({ message: 'server error', error: err });
+    });
+};
 
-
+// Get all products or products by category functionality
 module.exports.getProducts = (req, res) => {
-
     const catName = req.query.catName;
-    let _f = {}
+    let filter = {};
 
     if (catName) {
-        _f = { category: catName }
+        filter = { category: catName };
     }
 
-    Products.find(_f)
-        .then((result) => {
-            res.send({ message: 'success', products: result })
+    Product.find(filter)
+    .then((result) => {
+        res.send({ message: 'success', products: result });
+    })
+    .catch((err) => {
+        res.send({ message: 'server error', error: err });
+    });
+};
 
-        })
-        .catch((err) => {
-            res.send({ message: 'server err' })
-        })
-
-}
-
+// Get a product by ID functionality
 module.exports.getProductsById = (req, res) => {
     console.log(req.params);
 
-    Products.findOne({ _id: req.params.pId })
-        .then((result) => {
-            res.send({ message: 'success', product: result })
-        })
-        .catch((err) => {
-            res.send({ message: 'server err' })
-        })
+    Product.findOne({ _id: req.params.pId })
+    .then((result) => {
+        res.send({ message: 'success', product: result });
+    })
+    .catch((err) => {
+        res.send({ message: 'server error', error: err });
+    });
+};
 
-}
-
+// Get products added by a specific user functionality
 module.exports.myProducts = (req, res) => {
-
     const userId = req.body.userId;
 
-    Products.find({ addedBy: userId })
-        .then((result) => {
-            res.send({ message: 'success', products: result })
-        })
-        .catch((err) => {
-            res.send({ message: 'server err' })
-        })
-
-}
-
+    Product.find({ addedBy: userId })
+    .then((result) => {
+        res.send({ message: 'success', products: result });
+    })
+    .catch((err) => {
+        res.send({ message: 'server error', error: err });
+    });
+};
